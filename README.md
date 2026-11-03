@@ -15,6 +15,7 @@
 
 <br/>
 
+[![Version][badge-version]][link-releases]
 [![Platform][badge-platform]][link-releases]
 [![Electron][badge-electron]][link-electron]
 [![License][badge-license]][link-license]
@@ -316,3 +317,4 @@ git push origin feat/my-new-thing
 [badge-electron]: https://img.shields.io/badge/electron-30-47848F?logo=electron&logoColor=white
 [badge-license]:  https://img.shields.io/badge/license-MIT-green
 [badge-prs]:      https://img.shields.io/badge/PRs-welcome-brightgreen
+[badge-version]:  https://img.shields.io/badge/version-1.0-blue

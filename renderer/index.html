@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Krathorn Launcher</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo-mark">◆</span>
+      <span class="brand-text">KRATHORN</span>
+    </div>
+
+    <div id="accounts" class="accounts-scroll">
+      <div class="skeleton-chip"></div>
+      <div class="skeleton-chip"></div>
+      <div class="skeleton-chip"></div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button id="add-btn" class="icon-btn add-btn" title="Add (⌘N)"><span class="plus">+</span></button>
+    <button id="reload-btn" class="icon-btn" title="Reload (⌘R)">⟳</button>
+    <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <div id="banner" class="banner hidden">
+    <span class="banner-dot"></span>
+    <span class="banner-version" id="banner-version">v1.0</span>
+    <span class="banner-message" id="banner-message"></span>
+    <button id="banner-close" class="banner-close" title="Dismiss">×</button>
+  </div>
+
+  <main id="game-area">
+    <div id="game-card"></div>
+
+    <div id="transition-veil" class="transition-veil">
+      <div class="veil-diamond">◆</div>
+      <div class="veil-text">Loading…</div>
+    </div>
+
+    <div class="empty-state">
+      <div class="empty-glow"></div>
+      <div class="empty-icon">✦</div>
+      <h2>Welcome to Krathorn Launcher</h2>
+      <p>Add an account to begin. Each account runs in its own isolated session.</p>
+      <button id="empty-add-btn" class="btn-primary">Add account</button>
+    </div>
+  </main>
+
+  <footer id="footer">
+    2026 — <a href="https://krathorn.com/" id="footer-site">Krathorn</a>
+  </footer>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="modal-title">Add</h3>
+      <input id="modal-input" type="text" placeholder="Account name" autocomplete="off" />
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-secondary">Cancel</button>
+        <button id="modal-ok" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="confirm-title">Confirm</h3>
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="btn-secondary">Cancel</button>
+        <button id="confirm-ok" class="btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-box settings-box">
+      <h3>Settings</h3>
+      <label class="setting-row"><span>Sound effects</span><input type="checkbox" id="setting-sound" /></label>
+      <label class="setting-row"><span>Game notifications</span><input type="checkbox" id="setting-notifications" /></label>
+      <label class="setting-row">
+        <span>Theme</span>
+        <select id="setting-theme">
+          <option value="midnight">Midnight</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button id="settings-close" class="btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

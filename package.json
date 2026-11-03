@@ -1,0 +1,35 @@
+{
+  "name": "krathorn-launcher",
+  "productName": "Krathorn Launcher",
+  "version": "1.0",
+  "description": "Desktop launcher for Krathorn.",
+  "main": "main.js",
+  "author": "Krathorn",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "krathorn",
+    "electron",
+    "launcher"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theyweaiyou/krathorn-launcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theyweaiyou/krathorn-launcher/issues"
+  },
+  "homepage": "https://github.com/theyweaiyou/krathorn-launcher#readme",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-packager . \"Krathorn Launcher\" --platform=darwin --arch=arm64 --out=dist --overwrite --icon=icon.icns --app-bundle-id=com.krathorn.launcher --app-version=1.0 --ignore=\"^/docs(/|$)\"",
+    "build:mac-intel": "electron-packager . \"Krathorn Launcher\" --platform=darwin --arch=x64 --out=dist --overwrite --icon=icon.icns --app-bundle-id=com.krathorn.launcher --app-version=1.0 --ignore=\"^/docs(/|$)\"",
+    "build:mac-universal": "electron-packager . \"Krathorn Launcher\" --platform=darwin --arch=universal --out=dist --overwrite --icon=icon.icns --app-bundle-id=com.krathorn.launcher --app-version=1.0 --ignore=\"^/docs(/|$)\"",
+    "install:mac": "npm run build:mac && node -e \"const fs=require('fs');const src='dist/Krathorn Launcher-darwin-arm64/Krathorn Launcher.app';const dst='/Applications/Krathorn Launcher.app';if(fs.existsSync(dst))fs.rmSync(dst,{recursive:true,force:true});fs.cpSync(src,dst,{recursive:true});console.log('Installed to',dst)\"",
+    "install:mac-intel": "npm run build:mac-intel && node -e \"const fs=require('fs');const src='dist/Krathorn Launcher-darwin-x64/Krathorn Launcher.app';const dst='/Applications/Krathorn Launcher.app';if(fs.existsSync(dst))fs.rmSync(dst,{recursive:true,force:true});fs.cpSync(src,dst,{recursive:true});console.log('Installed to',dst)\""
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-packager": "^17.1.2"
+  }
+}

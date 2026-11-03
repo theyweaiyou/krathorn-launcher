@@ -139,57 +139,29 @@ Krathorn Launcher fixes all of that:
 
 ## Install
 
-### Option A — Pre-built release
+### Option A — Build from source
 
 1. Download the latest `.dmg` (or `.zip`) from the **[Releases page][link-releases]**.
-2. Open it and drag **Krathorn Launcher** into `/Applications`.
-3. The app is **unsigned**, so on first launch macOS will say:
+2. Open the new terminal at folder [**krathorn-launcher**].
+3. Install npm dependencies `npm install`.
 
-   > *"Krathorn Launcher cannot be opened because the developer cannot be verified."*
+   **Run**:
 
-   **To bypass (once)**, run:
-
-   ```bash
-   xattr -cr "/Applications/Krathorn Launcher.app"
+   ```# Pick one:
+    npm run build:mac            # Apple Silicon (arm64)
+    npm run build:mac-intel      # Intel (x64)
+    npm run build:mac-universal  # Universal binary (both)
    ```
+   
+   The output lands in `dist/Krathorn Launcher-darwin-<arch>/Krathorn Launcher.app`.
 
-   Then **right-click → Open** in Finder, or go to **System Settings → Privacy & Security → Open Anyway**.
+4. Copy the resulting bundle into `/Applications`.
+   
+### Option B — Test build
 
-### Option B — Build from source
-
-```bash
-git clone https://github.com/theyweaiyou/krathorn-launcher.git
-cd krathorn-launcher
-./build.sh
-```
-
-`build.sh` will:
-
-1. Install npm dependencies.
-2. Detect your architecture (`arm64` or `x86_64`).
-3. Build the appropriate `.app` bundle into `dist/`.
-4. Clear the macOS quarantine flag.
-5. Quit any running instance.
-6. Copy the resulting bundle into `/Applications`.
-
-After it finishes, launch **Krathorn Launcher** from Launchpad or Spotlight.
-
-### Manual build
-
-If you want the raw `.app` without touching `/Applications`:
-
-```bash
-npm install
-
-# Pick one:
-npm run build:mac            # Apple Silicon (arm64)
-npm run build:mac-intel      # Intel (x64)
-npm run build:mac-universal  # Universal binary (both)
-```
-
-The output lands in `dist/Krathorn Launcher-darwin-<arch>/Krathorn Launcher.app`.
-
-> **Developer loop:** run `npm start` to launch straight from source — no packaging, no code signing.
+1. After install npm dependencies `npm install`.
+2. Run `npm start` to launch straight from source — no packaging, no code signing.
+3. To end it, just quit any running instance and terminal.
 
 ---
 

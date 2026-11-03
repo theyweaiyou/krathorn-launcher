@@ -142,8 +142,8 @@ Krathorn Launcher fixes all of that:
 ### Option A — Build from source
 
 1. Download the latest `.dmg` (or `.zip`) from the **[Releases page][link-releases]**.
-2. Open the new terminal at folder [**krathorn-launcher**].
-3. Install npm dependencies `npm install`.
+2. Open the new terminal at folder `krathorn-launcher`.
+3. Install npm dependencies through terminal `npm install`.
 
    **Run**:
 
@@ -159,9 +159,9 @@ Krathorn Launcher fixes all of that:
    
 ### Option B — Test build
 
-1. After install npm dependencies `npm install`.
+1. After install npm dependencies.
 2. Run `npm start` to launch straight from source — no packaging, no code signing.
-3. To end it, just quit any running instance and terminal.
+3. To end it, just quit any running instance and terminate the terminal.
 
 ---
 

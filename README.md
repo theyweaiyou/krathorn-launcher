@@ -81,12 +81,6 @@ Krathorn Launcher fixes all of that:
 - **Clicking** a notification focuses the launcher and switches to the originating account.
 - Notifications for the currently-active account are **suppressed** (they're already visible).
 
-### Unread badges
-
-- A 1 s `document.title` watcher detects when the game updates its title to include `(N)`.
-- The chip for that account shows a red `N` badge (`99+` beyond that).
-- Clicking the chip clears the badge.
-
 ### Keyboard-first
 
 | Shortcut | Action |
@@ -118,11 +112,11 @@ Krathorn Launcher fixes all of that:
   <tr>
     <td align="center">
       <img src="docs/screenshot-midnight.png" alt="Midnight theme" width="440" /><br/>
-      <sub><b>Midnight</b> — main window</sub>
+      <sub><b>Midnight</b></sub>
     </td>
     <td align="center">
       <img src="docs/screenshot-light.png" alt="Light theme" width="440" /><br/>
-      <sub><b>Light</b> — same layout</sub>
+      <sub><b>Light</b></sub>
     </td>
   </tr>
 </table>

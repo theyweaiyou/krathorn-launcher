@@ -23,7 +23,7 @@
 
 <br/>
 
-<img src="docs/screenshot-launcher.png" alt="Krathorn Launcher — main window" width="880" />
+<img src="docs/logo.png" alt="logo" width="880" />
 
 </div>
 
@@ -110,6 +110,10 @@ Krathorn Launcher fixes all of that:
 
 <table>
   <tr>
+    <td align="center">
+      <img src="docs/screenshot-launcher.png" alt="Laucher window" width="440" /><br/>
+      <sub><b>Light</b></sub>
+    </td>
     <td align="center">
       <img src="docs/screenshot-midnight.png" alt="Midnight theme" width="440" /><br/>
       <sub><b>Midnight</b></sub>

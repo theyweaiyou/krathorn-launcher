@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => log('UNHANDLED REJECTION:', String(
 const APP_INFO = {
   version: '1.1',
   author: 'theyweaiyou',
-  banner: 'Features: multi-account, shortcuts. Tag releases: https://github.com/theyweaiyou/krathorn-launcher.',
+  banner: 'Features: multi-account, shortcuts. Tag releases: https://github.com/theyweaiyou/krathorn-launcher',
 };
 
 const TOPBAR_HEIGHT = 56;

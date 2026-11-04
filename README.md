@@ -119,7 +119,7 @@ Krathorn Launcher fixes all of that:
       <sub><b>Midnight</b></sub>
     </td>
     <td align="center">
-      <img src="screenshot-midnight.png" alt="Light theme" width="440" /><br/>
+      <img src="docs/screenshot-light.png" alt="Light theme" width="440" /><br/>
       <sub><b>Light</b></sub>
     </td>
   </tr>

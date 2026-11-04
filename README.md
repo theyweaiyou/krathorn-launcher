@@ -299,7 +299,7 @@ git push origin feat/my-new-thing
 
 <div align="center">
 
-**[back to top](#-krathorn-launcher)**
+**[back to top](#krathorn-launcher)**
 
 <sub>Made with love for the Krathorn community. Not affiliated with Krathorn or its developers.</sub>
 

@@ -1,9 +1,9 @@
 <!--
   ✨ Krathorn Launcher — README
   Screenshots live in docs/:
-    • docs/screenshot-launcher.png  (hero, top of page, ~880px wide)
+    • docs/logo.png  (hero, top of page, ~880px wide)
     • docs/screenshot-midnight.png  (left tile, ~440px wide)
-    • docs/screenshot-light.png     (right tile, ~440px wide)
+    • docs/screenshot-midnight.png     (right tile, ~440px wide)
   Keep the version badge in sync with package.json.
 -->
 
@@ -112,14 +112,14 @@ Krathorn Launcher fixes all of that:
   <tr>
     <td align="center">
       <img src="docs/screenshot-launcher.png" alt="Laucher window" width="440" /><br/>
-      <sub><b>Light</b></sub>
+      <sub><b>Launcher window</b></sub>
     </td>
     <td align="center">
       <img src="docs/screenshot-midnight.png" alt="Midnight theme" width="440" /><br/>
       <sub><b>Midnight</b></sub>
     </td>
     <td align="center">
-      <img src="docs/screenshot-light.png" alt="Light theme" width="440" /><br/>
+      <img src="screenshot-midnight.png" alt="Light theme" width="440" /><br/>
       <sub><b>Light</b></sub>
     </td>
   </tr>

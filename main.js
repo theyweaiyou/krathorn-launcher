@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, BrowserView, Menu, shell, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, session, BrowserView, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -17,14 +17,15 @@ process.on('unhandledRejection', (reason) => log('UNHANDLED REJECTION:', String(
 
 // ---------- App info ----------
 const APP_INFO = {
-  version: '1.0',
+  version: '1.1',
   author: 'theyweaiyou',
-  banner: 'Features: multi-account, game notifications, shortcuts (⌘N, ⌘R, ⌘C, ⌘F, Esc). Tag releases: https://github.com/theyweaiyou/krathorn-launcher',
+  banner: 'Features: multi-account, shortcuts. Tag releases: https://github.com/theyweaiyou/krathorn-launcher.',
 };
 
 const TOPBAR_HEIGHT = 56;
 const FRAME_INSET = 8;
 const FOOTER_HEIGHT = 26;
+const PANEL_WIDTH = 240;
 const URL = 'https://krathorn.com/game/village';
 
 // ---------- Renderer path resolution ----------
@@ -73,9 +74,10 @@ migrateOldUserData();
 
 let accounts = readJSON(accountsFile, []);
 let settings = readJSON(settingsFile, {
-  theme: 'midnight', sound: true, notifications: true, bannerDismissedVersion: null,
+  theme: 'midnight', sound: true, bannerDismissedVersion: null,
 });
 if (settings.theme !== 'light' && settings.theme !== 'midnight') settings.theme = 'midnight';
+if (typeof settings.hotkeyPanelVisible !== 'boolean') settings.hotkeyPanelVisible = false;
 
 log('startup | accounts:', accounts.length, '| theme:', settings.theme);
 
@@ -111,12 +113,43 @@ function closeSplash() {
   splashWindow = null;
 }
 
+// ---------- Context menu (right-click copy/paste) ----------
+// Same behaviour for the launcher chrome and every game view: Copy appears
+// when text is selected, Paste appears when the target is editable. No Cut —
+// ⌘X is reserved for "Close Window" in the app menu, so showing "Cut ⌘X"
+// in a popup would be misleading. No Select All either — kept minimal.
+function attachContextMenu(wc) {
+  wc.on('context-menu', (_e, params) => {
+    const hasSelection = params.selectionText && params.selectionText.trim().length > 0;
+    const items = [];
+
+    if (hasSelection) {
+      items.push({
+        label: 'Copy',
+        accelerator: 'CmdOrCtrl+C',
+        click: () => wc.copy(),
+      });
+    }
+
+    if (params.isEditable) {
+      items.push({
+        label: 'Paste',
+        accelerator: 'CmdOrCtrl+V',
+        click: () => wc.paste(),
+      });
+    }
+
+    if (items.length === 0) return;
+    Menu.buildFromTemplate(items).popup({ window: mainWindow });
+  });
+}
+
 // ---------- Main window ----------
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1360, height: 900, minWidth: 860, minHeight: 560,
     title: 'Krathorn Launcher',
-    backgroundColor: settings.theme === 'light' ? '#f5f6f8' : '#0a0a1a',
+    backgroundColor: settings.theme === 'light' ? '#e8e6e0' : '#0a0a1a',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -138,15 +171,14 @@ function createWindow() {
   mainWindow.webContents.on('preload-error', (_e, p, err) => log('PRELOAD ERROR:', p, err.message));
   mainWindow.webContents.on('render-process-gone', (_e, d) => log('render-gone:', d.reason));
 
-  // Safety net: prevent the launcher chrome from ever navigating away from
-  // itself (e.g. a stray <a href> in the footer, a link in a toast, ...).
-  // Any http(s) URL is handed to the system browser instead.
   mainWindow.webContents.on('will-navigate', (e, url) => {
     e.preventDefault();
     if (/^https?:/i.test(url)) {
       shell.openExternal(url).catch(() => {});
     }
   });
+
+  attachContextMenu(mainWindow.webContents);
 
   mainWindow.loadFile(HTML_PATH).catch((err) => log('loadFile failed:', err.message));
 
@@ -188,10 +220,14 @@ function scheduleLayout() {
 
 function computeViewBounds() {
   const [w, h] = mainWindow.getContentSize();
+  const showPanel = !!settings.hotkeyPanelVisible;
+  const panelW = showPanel ? PANEL_WIDTH : 0;
+  const gap = showPanel ? 8 : 0;
   const y = TOPBAR_HEIGHT + topOffset + FRAME_INSET;
   return {
-    x: FRAME_INSET, y,
-    width: Math.max(0, w - FRAME_INSET * 2),
+    x: FRAME_INSET,
+    y,
+    width: Math.max(0, w - FRAME_INSET * 2 - panelW - gap),
     height: Math.max(0, h - y - FRAME_INSET - FOOTER_HEIGHT),
   };
 }
@@ -215,8 +251,44 @@ function setStatus(id, patch) {
   notifyStatus();
 }
 
+// ---------- Accounts helpers ----------
+function cycleAccount(dir) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (accounts.length < 2) return;
+  const currentIdx = accounts.findIndex((a) => a.id === mainWindow._activeAccountId);
+  const nextIdx = currentIdx < 0 ? 0 : (currentIdx + dir + accounts.length) % accounts.length;
+  const next = accounts[nextIdx];
+  if (next && next.id !== mainWindow._activeAccountId) {
+    mainWindow.webContents.send('request-switch', next.id);
+  }
+}
+
+function focusedWebContents() {
+  if (!mainWindow || mainWindow.isDestroyed()) return null;
+  const view = mainWindow.getBrowserView();
+  if (view && !view.webContents.isDestroyed() && view.webContents.isFocused()) {
+    return view.webContents;
+  }
+  return mainWindow.webContents;
+}
+
 // ---------- Menu ----------
 function buildMenu() {
+  const accountItems = [];
+  for (let i = 0; i < 9; i++) {
+    const idx = i;
+    accountItems.push({
+      label: accounts[idx] ? `${idx + 1}. ${accounts[idx].name}` : `Account ${idx + 1}`,
+      accelerator: `CmdOrCtrl+${idx + 1}`,
+      enabled: !!accounts[idx],
+      click: () => {
+        if (accounts[idx] && mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('request-switch', accounts[idx].id);
+        }
+      },
+    });
+  }
+
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     {
       label: app.name,
@@ -226,15 +298,36 @@ function buildMenu() {
       label: 'File',
       submenu: [
         {
-          label: 'Add',
+          label: 'Add Account',
           accelerator: 'CmdOrCtrl+N',
           click: () => mainWindow?.webContents.send('request-add-account'),
         },
         { type: 'separator' },
         {
-          label: 'Close',
-          accelerator: 'CmdOrCtrl+C',
+          label: 'Close Window',
+          accelerator: 'CmdOrCtrl+X',
           click: () => { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close(); },
+        },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Copy',
+          accelerator: 'CmdOrCtrl+C',
+          click: () => { const wc = focusedWebContents(); if (wc) wc.copy(); },
+        },
+        {
+          label: 'Paste',
+          accelerator: 'CmdOrCtrl+V',
+          click: () => { const wc = focusedWebContents(); if (wc) wc.paste(); },
+        },
+        { type: 'separator' },
+        {
+          label: 'Select All',
+          accelerator: 'CmdOrCtrl+A',
+          click: () => { const wc = focusedWebContents(); if (wc) wc.selectAll(); },
         },
       ],
     },
@@ -250,8 +343,6 @@ function buildMenu() {
           },
         },
         { type: 'separator' },
-        { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' },
-        { type: 'separator' },
         {
           label: 'Toggle Full Screen',
           accelerator: 'CmdOrCtrl+F',
@@ -260,6 +351,23 @@ function buildMenu() {
               mainWindow.setFullScreen(!mainWindow.isFullScreen());
             }
           },
+        },
+      ],
+    },
+    {
+      label: 'Accounts',
+      submenu: [
+        ...accountItems,
+        { type: 'separator' },
+        {
+          label: 'Previous Account',
+          accelerator: 'CmdOrCtrl+Left',
+          click: () => cycleAccount(-1),
+        },
+        {
+          label: 'Next Account',
+          accelerator: 'CmdOrCtrl+Right',
+          click: () => cycleAccount(1),
         },
       ],
     },
@@ -295,6 +403,7 @@ ipcMain.handle('get-initial-state', () => ({
   settings,
   accounts,
   statusMap: accountStatus,
+  panelVisible: !!settings.hotkeyPanelVisible,
 }));
 
 // ---------- IPC: info / settings ----------
@@ -326,6 +435,7 @@ ipcMain.handle('add-account', (_e, name) => {
   const id = 'acc-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   accounts.push({ id, name: trimmed });
   writeJSON(accountsFile, accounts);
+  buildMenu();
   return { ok: true, id, name: trimmed };
 });
 
@@ -335,6 +445,7 @@ ipcMain.handle('rename-account', (_e, id, name) => {
   if (!acct || !trimmed) return { ok: false };
   acct.name = trimmed;
   writeJSON(accountsFile, accounts);
+  buildMenu();
   return { ok: true };
 });
 
@@ -345,6 +456,7 @@ ipcMain.handle('reorder-accounts', (_e, ids) => {
   for (const a of byId.values()) next.push(a);
   accounts = next;
   writeJSON(accountsFile, accounts);
+  buildMenu();
   return { ok: true };
 });
 
@@ -362,6 +474,7 @@ ipcMain.handle('delete-account', async (_e, id) => {
   delete accountStatus[id];
   try { await session.fromPartition(`persist:krathorn-${id}`).clearStorageData(); } catch (_) { /* ignore */ }
   notifyStatus();
+  buildMenu();
   return { ok: true };
 });
 
@@ -386,6 +499,14 @@ ipcMain.handle('show-view', () => {
   view.setBounds(computeViewBounds());
   view.setAutoResize({ width: true, height: true });
   mainWindow.setBrowserView(view);
+  return { ok: true };
+});
+
+// ---------- IPC: panel visibility ----------
+ipcMain.handle('set-panel-visible', (_e, visible) => {
+  settings.hotkeyPanelVisible = !!visible;
+  writeJSON(settingsFile, settings);
+  scheduleLayout();
   return { ok: true };
 });
 
@@ -416,6 +537,7 @@ function createGameView(id) {
   wc.on('did-stop-loading', () => setStatus(id, { loading: false }));
   wc.on('did-fail-load', (_e, code, desc) => setStatus(id, { loading: false, title: `Failed: ${desc}` }));
   hookEscape(wc);
+  attachContextMenu(wc);
 
   wc.on('dom-ready', () => {
     wc.executeJavaScript(`
@@ -425,17 +547,16 @@ function createGameView(id) {
         try {
           const B = window.__krathornBridge;
           if (!B) return;
-          const O = window.Notification;
-          if (O) {
-            const W = function(t, o) { try { B.notify({ title: String(t||''), body: String((o&&o.body)||'') }); } catch(e){} return new O(t, o); };
-            Object.assign(W, O);
-            W.permission = O.permission;
-            W.requestPermission = O.requestPermission ? O.requestPermission.bind(O) : () => Promise.resolve('granted');
-            window.Notification = W;
-          }
           let last = '';
           try { last = document.title; B.title(last); } catch(e){}
-          setInterval(() => { try { if (document.title !== last) { last = document.title; B.title(last); } } catch(e){} }, 1000);
+          setInterval(() => {
+            try {
+              if (document.title !== last) {
+                last = document.title;
+                B.title(last);
+              }
+            } catch(e){}
+          }, 1000);
         } catch(e) {}
       })();
     `).catch(() => {});
@@ -485,25 +606,8 @@ ipcMain.handle('reset-account', async (_e, id) => {
   return { ok: true };
 });
 
-// ---------- Game notifications ----------
+// ---------- Title watcher → unread badge ----------
 ipcMain.on('game-title', (_e, { accountId, title }) => {
   const m = String(title || '').match(/\((\d+)/);
   setStatus(accountId, { unread: m ? parseInt(m[1], 10) : 0 });
-});
-
-ipcMain.on('game-notification', (_e, { accountId, title, body }) => {
-  if (!settings.notifications) return;
-  if (mainWindow && mainWindow._activeAccountId === accountId) return;
-  try {
-    const n = new Notification({ title: title || 'Krathorn', body: body || '', silent: !settings.sound });
-    n.on('click', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        if (mainWindow.isMinimized()) mainWindow.restore();
-        mainWindow.show();
-        mainWindow.focus();
-        mainWindow.webContents.send('request-switch', accountId);
-      }
-    });
-    n.show();
-  } catch (err) { log('Notification failed:', err.message); }
 });

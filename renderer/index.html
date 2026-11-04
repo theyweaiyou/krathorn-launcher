@@ -21,6 +21,7 @@
 
     <div class="spacer"></div>
 
+    <button id="panel-btn" class="icon-btn" title="Accounts &amp; Shortcuts">⌘</button>
     <button id="add-btn" class="icon-btn add-btn" title="Add (⌘N)"><span class="plus">+</span></button>
     <button id="reload-btn" class="icon-btn" title="Reload (⌘R)">⟳</button>
     <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
@@ -28,7 +29,7 @@
 
   <div id="banner" class="banner hidden">
     <span class="banner-dot"></span>
-    <span class="banner-version" id="banner-version">v1.0</span>
+    <span class="banner-version" id="banner-version">v1.1</span>
     <span class="banner-message" id="banner-message"></span>
     <button id="banner-close" class="banner-close" title="Dismiss">×</button>
   </div>
@@ -49,6 +50,14 @@
       <button id="empty-add-btn" class="btn-primary">Add account</button>
     </div>
   </main>
+
+  <aside id="hotkey-panel" class="hotkey-panel hidden">
+    <div class="hk-header">
+      <span class="hk-title">Accounts &amp; Shortcuts</span>
+      <button id="hk-close" class="hk-close" title="Close">×</button>
+    </div>
+    <div id="hotkey-rows" class="hk-rows"></div>
+  </aside>
 
   <footer id="footer">
     2026 — <a href="https://krathorn.com/" id="footer-site">Krathorn</a>
@@ -80,7 +89,6 @@
     <div class="modal-box settings-box">
       <h3>Settings</h3>
       <label class="setting-row"><span>Sound effects</span><input type="checkbox" id="setting-sound" /></label>
-      <label class="setting-row"><span>Game notifications</span><input type="checkbox" id="setting-notifications" /></label>
       <label class="setting-row">
         <span>Theme</span>
         <select id="setting-theme">

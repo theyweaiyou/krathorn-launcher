@@ -37,4 +37,6 @@ contextBridge.exposeInMainWorld('launcherAPI', {
 
   hideView: () => ipcRenderer.invoke('hide-view'),
   showView: () => ipcRenderer.invoke('show-view'),
+
+  setPanelVisible: (v) => ipcRenderer.invoke('set-panel-visible', v),
 });

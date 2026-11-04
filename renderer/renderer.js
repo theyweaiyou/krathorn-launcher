@@ -5,11 +5,26 @@
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// Hardened binding: a missing element logs a warning instead of throwing
+// and taking down the rest of the renderer. Every top-level listener uses this.
+function bind(el, event, handler, label) {
+  if (!el) {
+    console.warn(`[boot] missing ${label || 'element'} — binding skipped`);
+    return false;
+  }
+  el.addEventListener(event, handler);
+  return true;
+}
+
+const isMac = /Mac/i.test(navigator.platform);
+const MOD = isMac ? '⌘' : 'Ctrl+';
+
 const accountsEl = $('#accounts');
 const addBtn = $('#add-btn');
 const emptyAddBtn = $('#empty-add-btn');
 const reloadBtn = $('#reload-btn');
 const settingsBtn = $('#settings-btn');
+const panelBtn = $('#panel-btn');
 
 const banner = $('#banner');
 const bannerVersion = $('#banner-version');
@@ -31,8 +46,11 @@ const confirmCancel = $('#confirm-cancel');
 const settingsModal = $('#settings-modal');
 const settingsClose = $('#settings-close');
 const settingSound = $('#setting-sound');
-const settingNotifications = $('#setting-notifications');
 const settingTheme = $('#setting-theme');
+
+const hotkeyPanel = $('#hotkey-panel');
+const hotkeyRows = $('#hotkey-rows');
+const hkClose = $('#hk-close');
 
 const toast = $('#toast');
 const veil = $('#transition-veil');
@@ -44,12 +62,13 @@ let activeId = null;
 let modalMode = null;
 let modalTargetId = null;
 let confirmResolve = null;
-let settings = { sound: true, notifications: true, theme: 'midnight' };
-let appInfo = { version: '1.0', author: 'theyweaiyou@gmail.com', banner: '' };
+let settings = { sound: true, theme: 'midnight' };
+let appInfo = { version: '1.1', banner: '' };
 let isSwitching = false;
 let newlyAddedId = null;
 let dragSrcId = null;
 let wasDragging = false;
+let panelVisible = false;
 
 /* ---------- Sound ---------- */
 let audioCtx = null;
@@ -108,17 +127,13 @@ function resolveConfirm(value) {
   if (confirmResolve) { const r = confirmResolve; confirmResolve = null; r(value); }
   schedulePopOverlay();
 }
-confirmOk.addEventListener('click', () => resolveConfirm(true));
-confirmCancel.addEventListener('click', () => resolveConfirm(false));
+bind(confirmOk, 'click', () => resolveConfirm(true));
+bind(confirmCancel, 'click', () => resolveConfirm(false));
 
 /* ---------- Banner ---------- */
-// Render banner text safely, turning any https?:// URLs into clickable links
-// that open in the system browser. Plain text is inserted as text nodes so
-// nothing is ever interpreted as HTML.
 function renderBannerMessage(text) {
   bannerMessage.textContent = '';
   const source = String(text || '');
-  // Split keeping the URL as its own token
   const parts = source.split(/(https?:\/\/[^\s]+)/g);
   for (const part of parts) {
     if (!part) continue;
@@ -141,7 +156,6 @@ function renderBannerMessage(text) {
 }
 
 async function updateTopOffset() {
-  // Read the real rendered height so a 1- or 2-line banner both work
   const h = banner.classList.contains('hidden') ? 0 : banner.offsetHeight + 8;
   document.documentElement.style.setProperty('--top-offset', `calc(var(--topbar-h) + ${h}px)`);
   await window.launcherAPI.setTopOffset(h);
@@ -158,7 +172,7 @@ async function setupBanner() {
   await updateTopOffset();
 }
 
-bannerClose.addEventListener('click', async () => {
+bind(bannerClose, 'click', async () => {
   playSound('click');
   banner.classList.add('hidden');
   await updateTopOffset();
@@ -172,9 +186,112 @@ function applySettings(s) {
   if (settings.theme !== 'light') settings.theme = 'midnight';
   document.documentElement.dataset.theme = settings.theme;
   settingSound.checked = !!settings.sound;
-  settingNotifications.checked = !!settings.notifications;
   settingTheme.value = settings.theme;
 }
+
+/* ============================================================
+   Hotkey panel
+   ============================================================ */
+function applyPanelVisibility(visible) {
+  panelVisible = !!visible;
+  if (panelVisible) {
+    hotkeyPanel.classList.remove('hidden');
+    document.documentElement.style.setProperty('--panel-w', '240px');
+    document.body.classList.add('panel-visible');
+  } else {
+    hotkeyPanel.classList.add('hidden');
+    document.documentElement.style.setProperty('--panel-w', '0px');
+    document.body.classList.remove('panel-visible');
+  }
+  renderHotkeyPanel();
+}
+
+function makeKeyBadge(text) {
+  const el = document.createElement('span');
+  el.className = 'hk-key';
+  el.textContent = text;
+  return el;
+}
+
+function makeLabel(text) {
+  const el = document.createElement('span');
+  el.className = 'hk-label';
+  el.textContent = text;
+  return el;
+}
+
+function renderHotkeyPanel() {
+  if (!panelVisible || !hotkeyRows) return;
+  hotkeyRows.textContent = '';
+
+  const accountsHeader = document.createElement('div');
+  accountsHeader.className = 'hk-section-header';
+  accountsHeader.textContent = 'ACCOUNTS';
+  hotkeyRows.appendChild(accountsHeader);
+
+  if (accounts.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'hk-empty';
+    empty.textContent = 'No accounts yet';
+    hotkeyRows.appendChild(empty);
+  } else {
+    accounts.forEach((acct, idx) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'hk-row hk-account-row' + (acct.id === activeId ? ' active' : '');
+      row.title = acct.name;
+
+      const keyBadge = makeKeyBadge(idx < 9 ? `${MOD}${idx + 1}` : '—');
+      const label = makeLabel(acct.name);
+      row.append(keyBadge, label);
+
+      row.addEventListener('click', () => {
+        if (acct.id !== activeId) selectAccount(acct.id);
+      });
+
+      hotkeyRows.appendChild(row);
+    });
+  }
+
+  const shortcutsHeader = document.createElement('div');
+  shortcutsHeader.className = 'hk-section-header';
+  shortcutsHeader.textContent = 'SHORTCUTS';
+  hotkeyRows.appendChild(shortcutsHeader);
+
+  const shortcuts = [
+    [`${MOD}←`, 'Previous account'],
+    [`${MOD}→`, 'Next account'],
+    [`${MOD}N`, 'Add account'],
+    [`${MOD}R`, 'Reload current'],
+    [`${MOD}X`, 'Close window'],
+    [`${MOD}F`, 'Toggle fullscreen'],
+    [`${MOD}C`, 'Copy'],
+    [`${MOD}V`, 'Paste'],
+  ];
+
+  for (const [key, label] of shortcuts) {
+    const row = document.createElement('div');
+    row.className = 'hk-row hk-shortcut-row';
+    row.append(makeKeyBadge(key), makeLabel(label));
+    hotkeyRows.appendChild(row);
+  }
+}
+
+/* ---------- Panel toggle ---------- */
+async function setPanelVisible(visible) {
+  await window.launcherAPI.setPanelVisible(visible);
+  applyPanelVisibility(visible);
+}
+
+bind(panelBtn, 'click', async () => {
+  playSound('click');
+  await setPanelVisible(!panelVisible);
+}, '#panel-btn');
+
+bind(hkClose, 'click', async () => {
+  playSound('click');
+  await setPanelVisible(false);
+}, '#hk-close');
 
 /* ---------- Accounts ---------- */
 function renderAccounts() {
@@ -259,6 +376,7 @@ function renderAccounts() {
       const [moved] = accounts.splice(fromIdx, 1);
       accounts.splice(toIdx, 0, moved);
       renderAccounts();
+      renderHotkeyPanel();
       await window.launcherAPI.reorderAccounts(accounts.map((a) => a.id));
       playSound('click');
     });
@@ -274,6 +392,7 @@ function renderAccounts() {
 }
 
 async function selectAccount(id) {
+  if (overlayCount > 0) return;   // don't switch while a modal is open
   if (isSwitching || id === activeId) return;
   const isFirst = !activeId;
 
@@ -288,6 +407,7 @@ async function selectAccount(id) {
     activeId = id;
     document.body.classList.add('has-view');
     renderAccounts();
+    renderHotkeyPanel();
 
     if (!isFirst) {
       await window.launcherAPI.switchAccount(id, { prepareOnly: true });
@@ -376,13 +496,13 @@ async function openRename(acct) {
   setTimeout(() => { modalInput.focus(); modalInput.select(); }, 50);
 }
 
-modalCancel.addEventListener('click', () => {
+bind(modalCancel, 'click', () => {
   playSound('click');
   modal.classList.add('hidden');
   popOverlay();
 });
 
-modalOk.addEventListener('click', async () => {
+bind(modalOk, 'click', async () => {
   const value = modalInput.value.trim();
   if (!value) return;
 
@@ -392,6 +512,7 @@ modalOk.addEventListener('click', async () => {
       newlyAddedId = res.id;
       accounts = await window.launcherAPI.getAccounts();
       renderAccounts();
+      renderHotkeyPanel();
       modal.classList.add('hidden');
       await popOverlay();
       await selectAccount(res.id);
@@ -406,6 +527,7 @@ modalOk.addEventListener('click', async () => {
     await window.launcherAPI.renameAccount(modalTargetId, value);
     accounts = await window.launcherAPI.getAccounts();
     renderAccounts();
+    renderHotkeyPanel();
     modal.classList.add('hidden');
     popOverlay();
     playSound('success');
@@ -413,7 +535,7 @@ modalOk.addEventListener('click', async () => {
   }
 });
 
-modalInput.addEventListener('keydown', (e) => {
+bind(modalInput, 'keydown', (e) => {
   if (e.key === 'Enter') modalOk.click();
   if (e.key === 'Escape') modalCancel.click();
 });
@@ -444,22 +566,22 @@ async function deleteAccount(acct) {
   }
   accounts = await window.launcherAPI.getAccounts();
   renderAccounts();
+  renderHotkeyPanel();
   playSound('success');
   showToast(`Deleted "${acct.name}"`, 'success');
 }
 
 /* ---------- Settings ---------- */
-settingsBtn.addEventListener('click', async () => {
+bind(settingsBtn, 'click', async () => {
   playSound('click');
   await pushOverlay();
   settingsModal.classList.remove('hidden');
 });
 
-settingsClose.addEventListener('click', async () => {
+bind(settingsClose, 'click', async () => {
   playSound('click');
   const patch = {
     sound: settingSound.checked,
-    notifications: settingNotifications.checked,
     theme: settingTheme.value === 'light' ? 'light' : 'midnight',
   };
   await window.launcherAPI.saveSettings(patch);
@@ -469,10 +591,6 @@ settingsClose.addEventListener('click', async () => {
 });
 
 /* ---------- Footer / buttons ---------- */
-// Open the Krathorn site in the user's default browser.
-// preventDefault stops the launcher window from navigating away from itself,
-// and the null guard keeps the renderer alive even if the footer link is
-// ever removed from the markup.
 if (footerSite) {
   footerSite.addEventListener('click', (e) => {
     e.preventDefault();
@@ -481,9 +599,9 @@ if (footerSite) {
   });
 }
 
-addBtn.addEventListener('click', openAdd);
-emptyAddBtn.addEventListener('click', openAdd);
-reloadBtn.addEventListener('click', () => { playSound('click'); window.launcherAPI.reloadActive(); });
+bind(addBtn, 'click', openAdd);
+bind(emptyAddBtn, 'click', openAdd);
+bind(reloadBtn, 'click', () => { playSound('click'); window.launcherAPI.reloadActive(); });
 
 /* ---------- Keyboard ---------- */
 document.addEventListener('keydown', (e) => {
@@ -493,8 +611,12 @@ document.addEventListener('keydown', (e) => {
   if (!confirmModal.classList.contains('hidden')) resolveConfirm(false);
 });
 
-/* ---------- Status ---------- */
-window.launcherAPI.onStatusUpdate((s) => { statusMap = s || {}; renderAccounts(); });
+/* ---------- IPC ---------- */
+window.launcherAPI.onStatusUpdate((s) => {
+  statusMap = s || {};
+  renderAccounts();
+});
+
 window.launcherAPI.onRequestSwitch((id) => { if (id && id !== activeId) selectAccount(id); });
 window.launcherAPI.onRequestAddAccount(openAdd);
 
@@ -506,11 +628,12 @@ window.launcherAPI.onRequestAddAccount(openAdd);
     settings = state.settings;
     accounts = state.accounts || [];
     statusMap = state.statusMap || {};
+    panelVisible = !!state.panelVisible;
     applySettings(settings);
 
-    // AWAIT — banner must finish sizing topOffset BEFORE any view attaches
     await setupBanner();
 
+    applyPanelVisibility(panelVisible);
     renderAccounts();
 
     if (accounts.length > 0) {

@@ -11,7 +11,7 @@
 
 # Krathorn Launcher
 
-**A native macOS desktop launcher for [Krathorn](https://krathorn.com) — multi-account, isolated sessions, native game notifications.**
+**A native macOS desktop launcher for [Krathorn](https://krathorn.com) — multi-account and isolated sessions.**
 
 <br/>
 

@@ -90,8 +90,8 @@ Krathorn Launcher fixes all of that:
 | `⌘C` | Close window |
 | `⌘F` | Toggle fullscreen |
 | `Esc` | Exit fullscreen |
-| `⌘←/→` | Account switching |
-| `⌘C/V` | Copy / paste selected area |
+| `⌘← / →` | Account switching |
+| `⌘C / V` | Copy / paste selected area |
 
 ### Two themes
 
@@ -145,11 +145,44 @@ Krathorn Launcher fixes all of that:
 
 ## Install
 
-### Option A — Pre-built release
+### Option A — Test-build
 
-1. Download the latest `.dmg` (or `.zip`) from the **[Releases page][link-releases]**.
-2. Open it and drag **Krathorn Launcher** into `/Applications`.
-3. The app is **unsigned**, so on first launch macOS will say:
+1. Download the latest `.zip` from the **[Releases page][link-releases]**.
+2. Open the folder through terminal **righ-click → New Terminal in Folder**.
+3. Install npm dependencies on selected terminal.
+
+   **Run**:
+
+   ```bash
+   npm install        # one time
+      
+   # and:
+   
+   npm start    # test-build
+   ```
+> **Test-build:** `npm start` to launch straight from source — no packaging, no code signing.
+
+4. To close, just force close (terminate) the app.
+
+### Option B — Build from source
+
+```bash
+git clone https://github.com/theyweaiyou/krathorn-launcher.git
+cd /path/to/krathorn-launcher
+chmod +x build.sh
+```
+
+`build.sh` will:
+
+1. Install npm dependencies.
+2. Detect your architecture (`arm64` or `x86_64`).
+3. Build the appropriate `.app` bundle into `dist/`.
+4. Clear the macOS quarantine flag.
+5. Quit any running instance.
+6. Remove any part from older version (if there is available).
+6. Copy the resulting bundle into `/Applications`.
+
+After it finishes, launch **Krathorn Launcher** from Launchpad or Spotlight.
 
    > *"Krathorn Launcher cannot be opened because the developer cannot be verified."*
 
@@ -160,42 +193,6 @@ Krathorn Launcher fixes all of that:
    ```
 
    Then **right-click → Open** in Finder, or go to **System Settings → Privacy & Security → Open Anyway**.
-
-### Option B — Build from source
-
-```bash
-git clone https://github.com/theyweaiyou/krathorn-launcher.git
-cd krathorn-launcher
-./build.sh
-```
-
-`build.sh` will:
-
-1. Install npm dependencies.
-2. Detect your architecture (`arm64` or `x86_64`).
-3. Build the appropriate `.app` bundle into `dist/`.
-4. Clear the macOS quarantine flag.
-5. Quit any running instance.
-6. Copy the resulting bundle into `/Applications`.
-
-After it finishes, launch **Krathorn Launcher** from Launchpad or Spotlight.
-
-### Manual build
-
-If you want the raw `.app` without touching `/Applications`:
-
-```bash
-npm install
-
-# Pick one:
-npm run build:mac            # Apple Silicon (arm64)
-npm run build:mac-intel      # Intel (x64)
-npm run build:mac-universal  # Universal binary (both)
-```
-
-The output lands in `dist/Krathorn Launcher-darwin-<arch>/Krathorn Launcher.app`.
-
-> **Developer loop:** run `npm start` to launch straight from source — no packaging, no code signing.
 
 ---
 
@@ -317,4 +314,4 @@ git push origin feat/my-new-thing
 [badge-electron]: https://img.shields.io/badge/electron-30-47848F?logo=electron&logoColor=white
 [badge-license]:  https://img.shields.io/badge/license-MIT-green
 [badge-prs]:      https://img.shields.io/badge/PRs-welcome-brightgreen
-[badge-version]:  https://img.shields.io/badge/version-1.0-blue
+[badge-version]:  https://img.shields.io/badge/version-1.1-blue

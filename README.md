@@ -1,12 +1,3 @@
-<!--
-  ✨ Krathorn Launcher — README
-  Screenshots live in docs/:
-    • docs/logo.png  (hero, top of page, ~880px wide)
-    • docs/screenshot-midnight.png  (left tile, ~440px wide)
-    • docs/screenshot-midnight.png     (right tile, ~440px wide)
-  Keep the version badge in sync with package.json.
--->
-
 <div align="center">
 
 # Krathorn Launcher

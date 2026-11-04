@@ -166,22 +166,32 @@ Krathorn Launcher fixes all of that:
 
 ### Option B — Build from source
 
-```bash
-git clone https://github.com/theyweaiyou/krathorn-launcher.git
-cd /path/to/krathorn-launcher
-chmod +x build.sh
-```
+1. Open terminal.
 
-`build.sh` will:
+   **Run**:
 
-1. Install npm dependencies.
-2. Detect your architecture (`arm64` or `x86_64`).
-3. Build the appropriate `.app` bundle into `dist/`.
-4. Clear the macOS quarantine flag.
-5. Quit any running instance.
-6. Remove any part from older version (if there is available).
-6. Copy the resulting bundle into `/Applications`.
+  ```bash
+  git clone https://github.com/theyweaiyou/krathorn-launcher.git
+  cd /Users/YOUR_USERNAME/krathorn-launcher
+  ls main.js package.json build.sh
+  chmod +x build.sh && ./build.sh
+  ```
 
+2. If you don't know where the location, run this on the terminal `find "$HOME" -maxdepth 6 -type d -name 'krathorn-launcher' -print 2>/dev/null`.
+3. Copy-paste it to the command before.
+
+  ```bash
+  build.sh will:
+
+  1. Install npm dependencies.
+  2. Detect your architecture (`arm64` or `x86_64`).
+  3. Build the appropriate `.app` bundle into `dist/`.
+  4. Clear the macOS quarantine flag.
+  5. Quit any running instance.
+  6. Remove any part from older version (if there is available).
+  7. Copy the resulting bundle into `/Applications`.
+  ```
+  
 After it finishes, launch **Krathorn Launcher** from Launchpad or Spotlight.
 
    > *"Krathorn Launcher cannot be opened because the developer cannot be verified."*

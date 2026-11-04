@@ -89,7 +89,9 @@ Krathorn Launcher fixes all of that:
 | `⌘R` | Reload active account |
 | `⌘C` | Close window |
 | `⌘F` | Toggle fullscreen |
-| `Esc` | Exit fullscreen / dismiss modal |
+| `Esc` | Exit fullscreen |
+| `⌘←/→` | Account switching |
+| `⌘C/V` | Copy / paste selected area |
 
 ### Two themes
 

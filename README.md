@@ -254,7 +254,6 @@ Electron cold-start plus Chromium initialisation. The splash screen covers this.
 <summary><b>Can I run more than one window?</b></summary>
 
 Yes, as of v1.2, any account can be detached to its own window from its `⋯` menu. The detached window uses the same isolated session partition, so it's the same account, just in a separate `BrowserWindow`. Close it to reattach to the docked view. The docked launcher itself remains single-window by design.
-</details><details> <summary><b>Does the launcher phone home?</b></summary>
 
 </details>
 

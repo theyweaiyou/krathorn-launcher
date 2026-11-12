@@ -1,0 +1,98 @@
+{
+  "name": "krathorn-launcher",
+  "productName": "Krathorn Launcher",
+  "version": "1.2.0",
+  "description": "Secure multi-account desktop launcher for Krathorn with a tab-based account interface.",
+  "main": "main.js",
+  "author": "theyweaiyou",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "krathorn",
+    "electron",
+    "launcher",
+    "multi-account"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theyweaiyou/krathorn-launcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theyweaiyou/krathorn-launcher/issues"
+  },
+  "homepage": "https://github.com/theyweaiyou/krathorn-launcher#readme",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "./update.sh",
+    "build:only": "./update.sh --no-install",
+    "build:arm64": "./update.sh arm64",
+    "build:x64": "./update.sh x64",
+    "build:universal": "./update.sh universal",
+    "install:mac": "./build.sh",
+    "uninstall": "./uninstall.sh",
+    "check": "node --check main.js && node --check preload.js && node --check game-preload.js && node --check modules/updater.js && node --check renderer/renderer.js"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "devDependencies": {
+    "electron": "45.3.1",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.krathorn.launcher",
+    "productName": "Krathorn Launcher",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "game-preload.js",
+      "modules/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.games",
+      "icon": "icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "theyweaiyou",
+        "repo": "krathorn-launcher",
+        "releaseType": "release"
+      }
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  }
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
+  <title>Krathorn Launcher</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo-mark">◆</span>
+      <span class="brand-text">KRATHORN</span>
+    </div>
+
+    <div id="accounts" class="accounts-scroll">
+      <div class="skeleton-chip"></div>
+      <div class="skeleton-chip"></div>
+      <div class="skeleton-chip"></div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button id="panel-btn" class="icon-btn" title="Accounts &amp; Shortcuts">⌘</button>
+    <button id="add-btn" class="icon-btn add-btn" title="Add (⌘N)"><span class="plus">+</span></button>
+    <button id="reload-btn" class="icon-btn" title="Reload (⌘R)">⟳</button>
+    <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <div id="banner" class="banner hidden">
+    <span class="banner-dot"></span>
+    <span class="banner-version" id="banner-version">v—</span>
+    <span class="banner-message" id="banner-message"></span>
+    <button id="banner-close" class="banner-close" title="Dismiss">×</button>
+  </div>
+
+  <main id="game-area">
+    <div id="game-card"></div>
+
+    <div id="transition-veil" class="transition-veil">
+      <div class="veil-diamond">◆</div>
+      <div class="veil-text">Loading…</div>
+    </div>
+
+    <div class="empty-state">
+      <div class="empty-glow"></div>
+      <div class="empty-icon">✦</div>
+      <h2>Welcome to Krathorn Launcher</h2>
+      <p>Add an account to begin. Each account runs in its own isolated session.</p>
+      <button id="empty-add-btn" class="btn-primary">Add account</button>
+    </div>
+  </main>
+
+  <aside id="hotkey-panel" class="hotkey-panel hidden">
+    <div class="hk-header">
+      <span class="hk-title">Accounts &amp; Shortcuts</span>
+      <button id="hk-close" class="hk-close" title="Close">×</button>
+    </div>
+    <div id="hotkey-rows" class="hk-rows"></div>
+  </aside>
+
+  <footer id="footer">
+    2026 — <a href="https://krathorn.com/" id="footer-site">Krathorn</a>
+  </footer>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="modal-title">Add</h3>
+      <input id="modal-input" type="text" placeholder="Account name" autocomplete="off" />
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-secondary">Cancel</button>
+        <button id="modal-ok" class="btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="confirm-title">Confirm</h3>
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="btn-secondary">Cancel</button>
+        <button id="confirm-ok" class="btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-box settings-box settings-box-wide">
+      <div class="settings-heading">
+        <h3>Settings</h3>
+        <button id="settings-dismiss" class="settings-dismiss" type="button" title="Close settings" aria-label="Close settings">×</button>
+      </div>
+      <div class="settings-grid">
+        <section class="settings-section">
+          <h4>Appearance</h4>
+          <label class="setting-row"><span>Sound effects</span><input type="checkbox" id="setting-sound" /></label>
+          <label class="setting-row"><span>Compact interface</span><input type="checkbox" id="setting-compact" /></label>
+          <label class="setting-row">
+            <span>Theme</span>
+            <select id="setting-theme"><option value="midnight">Midnight</option><option value="light">Light</option></select>
+          </label>
+          <label class="setting-row"><span>Game zoom</span><select id="setting-zoom"><option value="0.8">80%</option><option value="0.9">90%</option><option value="1">100%</option><option value="1.1">110%</option><option value="1.2">120%</option></select></label>
+        </section>
+        <section class="settings-section">
+          <h4>Accounts &amp; startup</h4>
+          <label class="setting-row"><span>Startup behavior</span><select id="setting-startup"><option value="restore-last">Restore last account</option><option value="first-account">Open first account</option><option value="empty">Start without account</option></select></label>
+        </section>
+        <section class="settings-section">
+          <h4>Performance</h4>
+          <label class="setting-row"><span>Performance mode</span><select id="setting-performance"><option value="standard">Standard</option><option value="memory-saving">Memory-saving</option></select></label>
+          <div class="performance-stats" id="performance-stats">Resource information will appear here.</div>
+          <button id="performance-refresh" class="btn-secondary btn-small">Refresh resource information</button>
+        </section>
+        <section class="settings-section">
+          <h4>Updates</h4>
+          <label class="setting-row"><span>Automatic update checks</span><input type="checkbox" id="setting-auto-update" /></label>
+          <div class="update-status" id="update-status">Current version v—</div>
+          <div class="update-actions">
+            <button id="settings-check-updates" class="btn-secondary btn-small">Check for updates</button>
+            <button id="settings-download-update" class="btn-secondary btn-small hidden">Download update</button>
+            <button id="settings-install-update" class="btn-primary btn-small hidden">Restart to install</button>
+          </div>
+        </section>
+      </div>
+      <div class="modal-actions"><button id="settings-close" class="btn-primary">Save settings</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

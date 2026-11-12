@@ -9,8 +9,6 @@
 [![Version][badge-version]][link-releases]
 [![Platform][badge-platform]][link-releases]
 [![Electron][badge-electron]][link-electron]
-[![License][badge-license]][link-license]
-[![PRs Welcome][badge-prs]][link-contributing]
 
 <br/>
 

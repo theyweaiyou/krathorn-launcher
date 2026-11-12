@@ -1,0 +1,76 @@
+/* ============================================================
+   v1.2 additions
+   ============================================================ */
+
+/* Modal fields (name / proxy / keep-active) */
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.modal-field > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.modal-field.hidden { display: none; }
+
+.modal-checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.modal-checkbox-row.hidden { display: none; }
+.modal-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Mini-menu separator + disabled state */
+.mini-menu-sep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--border);
+}
+.mini-menu-item.disabled {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ⋯ button visible when chip is keyboard-focused */
+.account-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.account-chip:focus-within .menu-btn,
+.account-chip:focus .menu-btn {
+  opacity: 1;
+}
+.account-chip:focus-visible .menu-btn {
+  opacity: 1;
+}
+
+/* Slightly stronger focus rings on icon buttons for keyboard users */
+.icon-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.hk-close:focus-visible,
+.banner-close:focus-visible,
+.menu-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 4px;
+}

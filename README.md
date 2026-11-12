@@ -23,14 +23,12 @@
 ## Table of Contents
 
 - [Why Krathorn Launcher?](#why-krathorn-launcher)
-- [Features](#features)
+- [What's New](#what's-new)
 - [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Install](#install)
-- [Uninstall](#uninstall)
 - [Updating](#updating)
 - [FAQ](#faq)
-- [Contributing](#contributing)
 - [Acknowledgments](#acknowledgments)
 - [License](#license)
 
@@ -42,7 +40,6 @@ Krathorn is a browser game. Like most browser games, running multiple accounts i
 
 - **Shared cookies** — logging into account B silently logs you out of account A.
 - **Shared cache / `localStorage`** — every account sees the same UI state.
-- **Silent notifications** — `window.Notification` from a tab you're not looking at gets dropped.
 - **Tab sprawl** — six tabs, all titled "Krathorn", and no way to tell which one has an unread message.
 
 Krathorn Launcher fixes all of that:
@@ -50,7 +47,6 @@ Krathorn Launcher fixes all of that:
 | Problem | Krathorn Launcher |
 |---|---|
 | ☒ Shared cookies across accounts | ☑ One isolated Chromium partition per account |
-| ☒ Silent / ignored game notifications | ☑ Real macOS Notification Center alerts |
 | ☒ Manual reload per tab | ☑ `⌘R` reloads only the active account |
 | ☒ "Which tab is which?" | ☑ Named, reorderable account chips |
 | ☒ Logging out to switch accounts | ☑ One click — sessions stay warm |
@@ -61,35 +57,22 @@ Krathorn Launcher fixes all of that:
 
 ---
 
-## Features
+## What's New
 
-### Multi-account
+### In v1.2
 
-- Run **any number** of Krathorn accounts side-by-side.
-- Each account gets its **own Electron session partition** (`persist:krathorn-<id>`), so cookies, cache, `localStorage`, IndexedDB, and service workers **never mix**.
-- **Reorder** accounts by dragging chips in the toolbar.
-- **Rename**, **edit**, **reset** (logout), or **delete** any account from its `⋯` menu.
-- Deleting an account also wipes its partition and cache — no orphaned session data.
-- **Detach** an account to its own window (same isolated session, separate `BrowserWindow`) — useful on a second monitor. Reattach by closing that window.
-
-### Per-account controls
-
-Configured from each account's `⋯` menu or the edit dialog:
-
-- **Proxy** — `http://`, `https://`, `socks4://`, or `socks5://`. Applied to that account's partition only.
-- **Zoom** — 50 % to 200 %, saved per account and reapplied on every launch. Change live with `⌘+` / `⌘−` / `⌘0` while the game is focused.
-- **Mute** — silences that account's audio without affecting the others.
-- **Background throttling opt-out** — for accounts that need to keep running timers while the chip is inactive. Off by default; enabling it raises CPU usage.
-
-### Security & isolation
-
-Every game view is loaded as untrusted remote content and defended accordingly:
-
-- **`sandbox: true`** on all game views and detached windows. Preloads use only `contextBridge` + `ipcRenderer`, both fully supported in the sandbox.
-- **Navigation lock** — `will-navigate` and `will-redirect` are blocked for any origin other than `krathorn.com`. `<webview>` injection is denied. `window.open` is forwarded to the OS browser.
-- **Permission allow-list** — only `notifications` and `fullscreen` are granted. Camera, microphone, geolocation, clipboard-read, midi, HID, serial, and USB are denied by default.
-- **Strict CSP** on the launcher chrome itself (`default-src 'self'`), since all launcher JS is local.
-- **IPC input validation** — the `game-title` channel checks the `accountId` against the account list before writing state; the unread regex is `\((\d+)\)` so a title like "Krathorn (5 min)" doesn't create a phantom badge.
+- Electron 45.3.1 and `WebContentsView` (replacing deprecated `BrowserView`).
+- Sandboxed renderer processes, stricter launcher CSP, IPC sender checks, URL validation, and explicit denial of website permission prompts.
+- Existing account session partition names are preserved: `persist:krathorn-<account-id>`.
+- Atomic JSON writes, corrupt-configuration preservation, account-record validation, and improved failure recovery.
+- Per-account loading, ready, offline, error, crashed, unresponsive, and idle statuses.
+- Classic v1.1-style account tabs with a manual Add (+) action, tab close (×), account options, drag-and-drop ordering, and unread/status indicators.
+- Window size, position, and maximized-state persistence.
+- Standard and Memory-saving performance modes with a process/memory overview. Memory-saving closes inactive views on account switch but retains their persistent login sessions.
+- Midnight/Light theme, compact interface, game zoom, startup behavior, and stable-channel automatic update checks.
+- Automatic updater integration for packaged macOS builds distributed through configured GitHub Releases. A valid signed release and publishing setup are required to activate production updating.
+- Installer defaults to `/Applications/Krathorn Launcher.app`.
+- Improved installer backups, rollback handling, and uninstaller with dry-run and explicit purge options.
 
 ### Keyboard-first
 
@@ -106,13 +89,6 @@ Every game view is loaded as untrusted remote content and defended accordingly:
 | `⌘+` / `⌘−` | Zoom active game in / out |
 | `⌘0` | Reset active game zoom |
 | `⌘C` / `⌘V` | Copy / paste (game view or launcher) |
-
-### Menu actions
-
-- **Accounts → Reload All** — reload every open game view.
-- **Accounts → Sound → Mute All / Unmute All** — bulk toggle, persisted per account.
-- **Accounts → Reset All Data…** — log out every account and clear cookies + cache, with a confirmation dialog.
-- **Krathorn Launcher → Check for Updates…** — hits GitHub Releases and reports the latest version, or "up to date".
 
 ### Update checker
 
@@ -200,22 +176,6 @@ Fastest path for trying it out or contributing.
    ./update.sh --install
    ```
 
-### Option C — Uninstall
-
-1. The launcher ships with a clean uninstaller that removes the app, all session partitions, caches, logs, and preference plists.
-
-   **Run**:
-
-  ```bash
-  chmod +x uninstall.sh
-  ./uninstall.sh --dry-run        # preview every path that would be removed
-  ./uninstall.sh                  # remove app + all user data (asks to confirm)
-  ./uninstall.sh --keep-data      # back up accounts.json / settings.json to ~/Desktop first
-  ./uninstall.sh --force -y       # scripted: kill the app and remove everything
-  ```
-
-2. `uninstall.sh` is idempotent — safe to run twice, and safe to run when the app is already gone. It targets macOS and Linux paths only.
-
 ---
 
 ## FAQ
@@ -259,49 +219,6 @@ Yes, as of v1.2, any account can be detached to its own window from its `⋯` me
 
 ---
 
-## Contributing
-
-Pull requests are very welcome! For non-trivial changes, **please open an issue first** to discuss what you'd like to change — it avoids duplicated effort.
-
-```bash
-# 1. Fork the repo on GitHub, then:
-git clone https://github.com/theyweaiyou/krathorn-launcher.git
-cd krathorn-launcher
-
-# 2. Branch from main
-git checkout -b feat/my-new-thing
-
-# 3. Hack, then sanity-check both paths:
-npm start                # dev loop
-./update.sh --build      # packaged smoke-test into dist/
-
-# 4. Commit conventionally
-git commit -m "feat: add X"
-git push origin feat/my-new-thing
-
-# 5. Open a PR
-```
-
-**Commit conventions** (loosely [Conventional Commits](https://www.conventionalcommits.org)):
-
-| Prefix | Use for |
-|---|---|
-| `feat:` | New user-visible feature |
-| `fix:` | Bug fix |
-| `perf:` | Performance improvement |
-| `refactor:` | Internal change, no user-visible effect |
-| `docs:` | README, comments, screenshots |
-| `chore:` | Build scripts, deps, config |
-
-**Style notes**
-
-- Renderer files are plain vanilla JS.
-- Main process: keep IPC handlers narrow (`ipcMain.handle`), return `{ ok: boolean }` objects.
-- Game views must stay `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`, and pass through `lockNavigation()`. PRs that weaken these will be declined.
-- No new runtime dependencies unless strictly necessary — the whole point is a thin shell.
-
----
-
 ## Acknowledgments
 
 - **[Electron](https://www.electronjs.org)** — the app shell.
@@ -330,7 +247,6 @@ git push origin feat/my-new-thing
      ============================================================ -->
 [link-releases]:     https://github.com/theyweaiyou/krathorn-launcher/releases
 [link-license]:      https://github.com/theyweaiyou/krathorn-launcher/blob/main/LICENSE
-[link-contributing]: https://github.com/theyweaiyou/krathorn-launcher/blob/main/CONTRIBUTING.md
 [link-electron]:     https://www.electronjs.org
 [badge-platform]: https://img.shields.io/badge/platform-macOS%2011%2B-black?logo=apple&logoColor=white
 [badge-electron]: https://img.shields.io/badge/electron-30-47848F?logo=electron&logoColor=white

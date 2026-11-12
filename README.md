@@ -91,13 +91,6 @@ Every game view is loaded as untrusted remote content and defended accordingly:
 - **Strict CSP** on the launcher chrome itself (`default-src 'self'`), since all launcher JS is local.
 - **IPC input validation** — the `game-title` channel checks the `accountId` against the account list before writing state; the unread regex is `\((\d+)\)` so a title like "Krathorn (5 min)" doesn't create a phantom badge.
 
-### Native notifications
-
-- The game's `window.Notification(...)` calls are forwarded through a secure `contextBridge` to the main process.
-- Alerts are re-emitted as real **macOS Notification Center** notifications, with the source account name in the title.
-- **Clicking** a notification focuses the launcher and switches to the originating account.
-- Notifications for the currently-active account are **suppressed** (they're already visible).
-
 ### Keyboard-first
 
 | Shortcut | Action |

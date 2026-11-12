@@ -23,11 +23,10 @@
 ## Table of Contents
 
 - [Why Krathorn Launcher?](#why-krathorn-launcher)
-- [What's New](#what's-new)
+- [Whats New](#what-new)
 - [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Install](#install)
-- [Updating](#updating)
 - [FAQ](#faq)
 - [Acknowledgments](#acknowledgments)
 - [License](#license)
@@ -57,7 +56,7 @@ Krathorn Launcher fixes all of that:
 
 ---
 
-## What's New
+## What New
 
 ### In v1.2
 
